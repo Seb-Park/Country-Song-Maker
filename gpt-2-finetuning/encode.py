@@ -6,8 +6,8 @@
 import argparse
 import numpy as np
 
-import encoder
-from load_dataset import load_dataset
+from src import encoder
+from src import load_dataset as ld
 
 parser = argparse.ArgumentParser(
     description='Pre-encode text files into tokenized training set.',
@@ -23,7 +23,7 @@ def main():
     args = parser.parse_args()
     enc = encoder.get_encoder(args.model_name, models_dir=args.models_dir)
     print('Reading files')
-    chunks = load_dataset(enc, args.in_text, args.combine, encoding=args.encoding)
+    chunks = ld.load_dataset(enc, args.in_text, args.combine, encoding=args.encoding)
     print('Writing', args.out_npz)
     np.savez_compressed(args.out_npz, *chunks)
 
