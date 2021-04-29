@@ -25,8 +25,8 @@ if tf.VERSION >= '2':
                                                   })
 
 
-import model, sample, encoder
-from load_dataset import load_dataset, Sampler
+from src import model, sample, encoder
+from src import load_dataset as ld
 
 CHECKPOINT_DIR = 'checkpoint'
 SAMPLE_DIR = 'samples'
@@ -37,7 +37,7 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--dataset', metavar='PATH', type=str, required=True, help='Input file, directory, or glob pattern (utf-8 text, or preencoded .npz files).')
-parser.add_argument('--model_name', metavar='MODEL', type=str, default='124M', help='Pretrained model name')
+parser.add_argument('--model_name', metavar='MODEL', type=str, default='117M', help='Pretrained model name')
 parser.add_argument('--models_dir', metavar='PATH', type=str, default='models', help='Path to models directory')
 parser.add_argument('--combine', metavar='CHARS', type=int, default=50000, help='Concatenate input files with <|endoftext|> separator into chunks of this minimum size')
 parser.add_argument('--encoding', type=str, default='utf-8', help='Set the encoding for reading and writing files.')
@@ -188,11 +188,11 @@ def main():
         saver.restore(sess, ckpt)
 
         print('Loading dataset...')
-        chunks = load_dataset(enc, args.dataset, args.combine, encoding=args.encoding)
-        data_sampler = Sampler(chunks)
+        chunks = ld.load_dataset(enc, args.dataset, args.combine, encoding=args.encoding)
+        data_sampler = ld.Sampler(chunks)
         if args.val_every > 0:
             if args.val_dataset:
-                val_chunks = load_dataset(enc, args.val_dataset, args.combine, encoding=args.encoding)
+                val_chunks = ld.load_dataset(enc, args.val_dataset, args.combine, encoding=args.encoding)
             else:
                 val_chunks = chunks
         print('dataset has', data_sampler.total_size, 'tokens')
@@ -201,7 +201,7 @@ def main():
         if args.val_every > 0:
             # Sample from validation set once with fixed seed to make
             # it deterministic during training as well as across runs.
-            val_data_sampler = Sampler(val_chunks, seed=1)
+            val_data_sampler = ld.Sampler(val_chunks, seed=1)
             val_batches = [[val_data_sampler.sample(1024) for _ in range(args.val_batch_size)]
                            for _ in range(args.val_batch_count)]
 
